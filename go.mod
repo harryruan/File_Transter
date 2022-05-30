@@ -2,7 +2,10 @@ module example.com/m
 
 go 1.17
 
-require github.com/gin-gonic/gin v1.7.7
+require (
+	github.com/gin-gonic/gin v1.7.7
+	github.com/webview/webview v0.0.0-00010101000000-000000000000
+)
 
 require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -22,3 +25,5 @@ require (
 )
 
 replace github.com/zserge/lorca => /Users/ruanzhihong/Downloads/GitHub/lorca
+
+replace github.com/webview/webview => /Users/ruanzhihong/Downloads/GitHub/webview

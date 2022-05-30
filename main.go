@@ -3,14 +3,11 @@ package main
 import (
 	"embed"
 	"github.com/gin-gonic/gin"
+	"github.com/webview/webview"
 	"io/fs"
 	"log"
 	"net/http"
-	"os"
-	"os/exec"
-	"os/signal"
 	"strings"
-	"time"
 )
 
 //go:embed frontend/dist/*
@@ -50,22 +47,22 @@ func main() {
 		}
 	}()
 
-	time.Sleep(time.Second * 3)
-	cmd := exec.Command(`open`, "http://localhost:8080/static/index.html")
-	err := cmd.Start()
-	if err != nil {
-		return
-	}
-
-	chSignal := make(chan os.Signal, 1)
-	signal.Notify(chSignal, os.Interrupt)
-	select {
-	case <-chSignal:
-		err := cmd.Process.Kill()
-		if err != nil {
-			return
-		}
-	}
+	//time.Sleep(time.Second * 3)
+	//cmd := exec.Command(`open`, "http://localhost:8080/static/index.html")
+	//err := cmd.Start()
+	//if err != nil {
+	//	return
+	//}
+	//
+	//chSignal := make(chan os.Signal, 1)
+	//signal.Notify(chSignal, os.Interrupt)
+	//select {
+	//case <-chSignal:
+	//	err := cmd.Process.Kill()
+	//	if err != nil {
+	//		return
+	//	}
+	//}
 	//exec.Command(`open`, `https://baidu.com`).Start()
 	//exec.Command(`open`, `https://www.baidu.com`).Start()
 	//var ui lorca.UI
@@ -86,11 +83,11 @@ func main() {
 	//}
 	////ui.Close()
 
-	//debug := true
-	//w := webview.New(debug)
-	//defer w.Destroy()
-	//w.SetTitle("Hello world!")
-	//w.SetSize(800, 600, webview.HintNone)
-	//w.Navigate("http://localhost:8080")
-	//w.Run()
+	debug := true
+	w := webview.New(debug)
+	defer w.Destroy()
+	w.SetTitle("Hello world!")
+	w.SetSize(800, 600, webview.HintNone)
+	w.Navigate("http://localhost:8080/static/index.html")
+	w.Run()
 }
