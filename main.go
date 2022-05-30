@@ -3,10 +3,15 @@ package main
 import (
 	"embed"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/webview/webview"
 	"io/fs"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -18,6 +23,7 @@ func main() {
 		gin.SetMode(gin.DebugMode)
 		router := gin.Default()
 		staticFiles, _ := fs.Sub(FS, "frontend/dist")
+		router.POST("/api/v1/texts", TextsController)
 		router.StaticFS("/static", http.FS(staticFiles))
 		router.NoRoute(func(c *gin.Context) {
 			path := c.Request.URL.Path
@@ -86,8 +92,39 @@ func main() {
 	debug := true
 	w := webview.New(debug)
 	defer w.Destroy()
-	w.SetTitle("Hello world!")
+	//w.SetTitle("Hello world!")
 	w.SetSize(800, 600, webview.HintNone)
 	w.Navigate("http://localhost:8080/static/index.html")
 	w.Run()
+}
+
+func TextsController(c *gin.Context) {
+	var json struct {
+		Raw string `json:"raw"`
+	}
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	} else {
+		exe, err := os.Executable() //获取当前执行文件的路径
+		if err != nil {             //如果获取失败
+			log.Fatal(err) //输出错误
+		}
+		dir := filepath.Dir(exe) //获取当前执行文件的目录
+		if err != nil {
+			log.Fatal(err)
+		}
+		filename := uuid.New().String()          //生成一个文件名
+		uploads := filepath.Join(dir, "uploads") //获取uploads目录的绝对路径
+		err = os.MkdirAll(uploads, os.ModePerm)  //创建uploads目录
+		if err != nil {
+			log.Fatal(err)
+		}
+		fullpath := path.Join("uploads", filename+".txt")                            //拼接文件的绝对路径(不含目录)
+		err = ioutil.WriteFile(filepath.Join(dir, fullpath), []byte(json.Raw), 0644) //将json.Raw 写入文件
+		if err != nil {
+			log.Fatal(err)
+		}
+		c.JSON(http.StatusOK, gin.H{"url": "/" + fullpath}) //返回文件的绝对路径（不含exe所在目录）
+	}
+
 }
