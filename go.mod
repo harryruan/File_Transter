@@ -1,4 +1,4 @@
-module example.com/m
+module File_Transter
 
 go 1.17
 
