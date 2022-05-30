@@ -2,10 +2,7 @@ module example.com/m
 
 go 1.17
 
-require (
-	github.com/gin-gonic/gin v1.7.7
-	github.com/webview/webview v0.0.0-20220528161540-65eb02a3679d
-)
+require github.com/gin-gonic/gin v1.7.7
 
 require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
