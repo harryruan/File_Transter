@@ -4,6 +4,7 @@ import (
 	"embed"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/skip2/go-qrcode"
 	"github.com/webview/webview"
 	"io/fs"
 	"io/ioutil"
@@ -25,8 +26,10 @@ func main() {
 		router := gin.Default()
 		staticFiles, _ := fs.Sub(FS, "frontend/dist")
 		router.GET("/uploads/:path", UploadsController)
+		router.GET("/api/v1/qrcodes", QrcodesController)
 		router.GET("/api/v1/addresses", AddressesController)
 		router.POST("/api/v1/texts", TextsController)
+		router.POST("/api/v1/files", FilesController)
 		router.StaticFS("/static", http.FS(staticFiles))
 		router.NoRoute(func(c *gin.Context) {
 			path := c.Request.URL.Path
@@ -167,4 +170,43 @@ func UploadsController(c *gin.Context) {
 	} else {
 		c.Status(http.StatusNotFound)
 	}
+}
+
+func QrcodesController(c *gin.Context) {
+	if content := c.Query("content"); content != "" {
+		png, err := qrcode.Encode(content, qrcode.Medium, 256)
+		if err != nil {
+			log.Fatal(err)
+		}
+		c.Data(http.StatusOK, "image/png", png)
+	} else {
+		c.Status(http.StatusBadRequest)
+	}
+}
+
+func FilesController(c *gin.Context) {
+	file, err := c.FormFile("raw")
+	if err != nil {
+		log.Fatal(err)
+	}
+	exe, err := os.Executable()
+	if err != nil {
+		log.Fatal(err)
+	}
+	dir := filepath.Dir(exe)
+	if err != nil {
+		log.Fatal(err)
+	}
+	filename := uuid.New().String()
+	uploads := filepath.Join(dir, "uploads")
+	err = os.MkdirAll(uploads, os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fullpath := path.Join("uploads", filename+filepath.Ext(file.Filename))
+	fileErr := c.SaveUploadedFile(file, filepath.Join(dir, fullpath))
+	if fileErr != nil {
+		log.Fatal(fileErr)
+	}
+	c.JSON(http.StatusOK, gin.H{"url": "/" + fullpath})
 }
