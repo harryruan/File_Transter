@@ -1,3 +1,7 @@
+//go:build linux || darwin || windows
+
+// linux darwin windows：表示linux darwin windows都可以编译
+
 package main
 
 import (
@@ -21,6 +25,7 @@ import (
 var FS embed.FS
 
 func main() {
+	port := "27149"
 	go func() {
 		gin.SetMode(gin.DebugMode)
 		router := gin.Default()
@@ -53,7 +58,7 @@ func main() {
 				c.Status(http.StatusNotFound)
 			}
 		})
-		err := router.Run(":8080")
+		err := router.Run(":" + port)
 		if err != nil {
 			return
 		}
@@ -100,7 +105,7 @@ func main() {
 	defer w.Destroy()
 	//w.SetTitle("Hello world!")
 	w.SetSize(800, 600, webview.HintNone)
-	w.Navigate("http://localhost:8080/static/index.html")
+	w.Navigate("http://localhost:" + port + "/static/index.html")
 	w.Run()
 }
 
