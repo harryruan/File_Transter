@@ -1,4 +1,4 @@
-module File_Transter
+module github.com/harryruan/File_Transter
 
 go 1.17
 
